@@ -50,7 +50,7 @@ Installation
 
 Clone the repository (or download the source code):
 
-git clone [https://github.com/yourusername/skillmatch-ai.git](https://github.com/Rup-source226/skillmatch-ai.git)
+git clone [https://github.com/yourusername/skillmatch-ai.git]([https://github.com/Rup-source226/skillmatch-ai.git](https://github.com/Rup-source226/skillmatch-ai))
 
 
 Open the file:
