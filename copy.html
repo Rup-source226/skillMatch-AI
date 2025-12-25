@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillMatch AI | AI Talent Intelligence</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        accent: {
+                            green: '#10b981',
+                            red: '#ef4444',
+                            blue: '#3b82f6',
+                            teal: '#14b8a6'
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.05) 0px, transparent 50%),
+                            radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        
+        /* Glassmorphism Logic */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0; 
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.4s ease-out forwards;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom Input VFX */
+        .input-group {
+            position: relative;
+        }
+        .input-group input {
+            transition: all 0.3s ease;
+        }
+        .input-group input:focus {
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+        .input-group label {
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            color: #94a3b8;
+        }
+        .input-group input:focus ~ label,
+        .input-group input:not(:placeholder-shown) ~ label {
+            top: -0.5rem;
+            left: 0.8rem;
+            font-size: 0.75rem;
+            padding: 0 0.25rem;
+            background: white;
+            color: #7c3aed;
+            font-weight: 600;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .heatmap-cell { transition: all 0.2s ease; }
+        .heatmap-cell:hover {
+            transform: scale(1.05); z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* Chatbot */
+        #chat-window {
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: bottom right;
+        }
+        .chat-message {
+            max-width: 80%;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            animation: fadeInUp 0.3s ease-out forwards;
+        }
+        .chat-user { background: #7c3aed; color: white; margin-left: auto; border-bottom-right-radius: 0.25rem; }
+        .chat-bot { background: #f1f5f9; color: #1e293b; margin-right: auto; border-bottom-left-radius: 0.25rem; }
+        
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col font-sans overflow-x-hidden">
+
+    <!-- Navigation (Hidden on Login) -->
+    <nav id="navbar" class="hidden bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer group" onclick="switchView('landing-view')">
+                        <div class="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform duration-300">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <span class="font-bold text-xl tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">SkillMatch<span class="text-brand-600">.ai</span></span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button id="resetBtn" class="text-sm font-semibold text-slate-500 hover:text-brand-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-50">Reset Demo</button>
+                    
+                    <!-- Profile Menu Container -->
+                    <div class="relative">
+                        <button id="profile-btn" onclick="toggleProfileMenu()" class="h-9 w-9 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 border border-slate-300 shadow-sm hover:ring-2 hover:ring-brand-200 transition-all focus:outline-none">
+                            <i class="fa-solid fa-user"></i>
+                        </button>
+
+                        <!-- Profile Dropdown -->
+                        <div id="profile-dropdown" class="hidden absolute right-0 top-12 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden transform transition-all duration-200 origin-top-right z-50 animate-in fade-in slide-in-from-top-2">
+                            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-lg font-bold shadow-md shadow-brand-500/20">
+                                        AJ
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-900">Aditi</h4>
+                                        <p class="text-xs text-slate-500 font-medium">Full Stack Developer</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-2">
+                                <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-600 rounded-xl transition-colors group">
+                                    <i class="fa-solid fa-user-gear text-slate-400 group-hover:text-brand-500 transition-colors"></i> My Account
+                                </a>
+                                <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-600 rounded-xl transition-colors group">
+                                    <i class="fa-solid fa-bell text-slate-400 group-hover:text-brand-500 transition-colors"></i> Notifications 
+                                    <span class="ml-auto bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+                                </a>
+                            </div>
+                            <div class="p-2 border-t border-slate-100">
+                                 <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+                                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="app" class="flex-grow relative">
+        
+        <!-- View: AUTH LOGIN (New) -->
+        <section id="auth-view" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+             <!-- Animated Background Blobs -->
+             <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+                <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+                <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-accent-blue/30 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style="animation-delay: 2s"></div>
+                <div class="absolute bottom-[-10%] left-[20%] w-96 h-96 bg-accent-teal/30 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style="animation-delay: 4s"></div>
+            </div>
+
+            <div class="container max-w-5xl mx-auto px-4 relative z-10 flex flex-col md:flex-row items-center gap-12">
+                
+                <!-- Left Side: Hero Text -->
+                <div class="hidden md:block w-1/2 space-y-6 text-slate-800 fade-in-up">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-brand-200 text-brand-600 text-xs font-bold shadow-sm">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+                        </span>
+                        SkillMatch Platform v2.0
+                    </div>
+                    <h1 class="text-6xl font-extrabold tracking-tight leading-tight">
+                        Talent Intelligence <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-accent-blue">Reimagined.</span>
+                    </h1>
+                    <p class="text-lg text-slate-600 leading-relaxed max-w-md">
+                        Join 10,000+ candidates and recruiters using AI to decode skills, predict retention, and match the perfect fit instantly.
+                    </p>
+                    
+                    <div class="flex gap-4 pt-4">
+                        <div class="bg-white/60 p-4 rounded-2xl border border-white/50 shadow-sm backdrop-blur-sm">
+                            <div class="text-2xl font-bold text-slate-900">95%</div>
+                            <div class="text-xs text-slate-500 font-bold uppercase">Match Accuracy</div>
+                        </div>
+                        <div class="bg-white/60 p-4 rounded-2xl border border-white/50 shadow-sm backdrop-blur-sm">
+                            <div class="text-2xl font-bold text-slate-900">4x</div>
+                            <div class="text-xs text-slate-500 font-bold uppercase">Faster Hiring</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Interactive Login Card -->
+                <div class="w-full md:w-1/2 max-w-md fade-in-up delay-100">
+                    <div class="glass-panel p-8 rounded-3xl relative overflow-hidden">
+                        
+                        <!-- Role Toggles -->
+                        <div class="flex p-1 bg-slate-100/80 rounded-xl mb-8 relative">
+                            <div id="role-indicator" class="absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out z-0"></div>
+                            <button onclick="setAuthRole('candidate')" class="flex-1 relative z-10 py-2.5 text-sm font-bold text-center transition-colors duration-300 text-brand-700" id="btn-candidate">
+                                <i class="fa-solid fa-user mr-2"></i> Candidate
+                            </button>
+                            <button onclick="setAuthRole('recruiter')" class="flex-1 relative z-10 py-2.5 text-sm font-bold text-center transition-colors duration-300 text-slate-500" id="btn-recruiter">
+                                <i class="fa-solid fa-briefcase mr-2"></i> Recruiter
+                            </button>
+                        </div>
+
+                        <!-- Header -->
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl font-bold text-slate-900" id="auth-title">Welcome Back</h2>
+                            <p class="text-sm text-slate-500" id="auth-subtitle">Enter your credentials to access your dashboard</p>
+                        </div>
+
+                        <!-- Form -->
+                        <form onsubmit="handleLogin(event)" class="space-y-5">
+                            <div class="input-group">
+                                <input type="email" id="email" class="w-full px-4 py-3.5 rounded-xl bg-white/50 border border-slate-200 focus:outline-none focus:bg-white text-slate-900 font-medium placeholder-transparent" placeholder="Email" required>
+                                <label for="email">Email Address</label>
+                            </div>
+                            
+                            <div class="input-group">
+                                <input type="password" id="password" class="w-full px-4 py-3.5 rounded-xl bg-white/50 border border-slate-200 focus:outline-none focus:bg-white text-slate-900 font-medium placeholder-transparent" placeholder="Password" required>
+                                <label for="password">Password</label>
+                            </div>
+
+                            <div class="flex justify-between items-center text-xs font-bold text-slate-500">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                                    Remember me
+                                </label>
+                                <a href="#" class="text-brand-600 hover:text-brand-700">Forgot Password?</a>
+                            </div>
+
+                            <button type="submit" class="w-full py-4 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
+                                <span id="btn-text">Sign In</span> <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </form>
+
+                        <!-- Footer Toggle -->
+                        <div class="mt-8 text-center">
+                            <p class="text-sm text-slate-500 font-medium">
+                                Don't have an account? 
+                                <button onclick="toggleAuthMode()" class="text-brand-600 font-bold hover:underline ml-1 focus:outline-none" id="auth-toggle-link">Sign Up</button>
+                            </p>
+                        </div>
+
+                         <!-- Social Login -->
+                         <div class="mt-8 pt-6 border-t border-slate-200/50">
+                             <p class="text-xs text-center text-slate-400 font-bold mb-4 uppercase tracking-wider">Or continue with</p>
+                             <div class="flex gap-4 justify-center">
+                                 <button class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:border-brand-300 hover:text-brand-600 transition-colors shadow-sm"><i class="fa-brands fa-google"></i></button>
+                                 <button class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:border-brand-300 hover:text-brand-600 transition-colors shadow-sm"><i class="fa-brands fa-github"></i></button>
+                                 <button class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:border-brand-300 hover:text-brand-600 transition-colors shadow-sm"><i class="fa-brands fa-linkedin-in"></i></button>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View: Landing Page (Role Selection - Acts as Main Menu) -->
+        <section id="landing-view" class="hidden max-w-7xl mx-auto px-4 py-20 sm:px-6 lg:px-8 relative overflow-hidden fade-in-up">
+            <!-- Decorative Background Elements -->
+            <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand-200/20 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
+            <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-accent-blue/10 rounded-full blur-3xl -z-10 animate-pulse-slow" style="animation-delay: 1s;"></div>
+
+            <div class="text-center mb-16">
+                 <span class="inline-block py-1 px-3 rounded-full bg-brand-50 border border-brand-100 text-brand-600 text-xs font-bold tracking-wide mb-4 shadow-sm">
+                    ✨ DASHBOARD ACCESS
+                </span>
+                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">
+                    Welcome, <span id="landing-username">Aditi</span>!
+                </h1>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                    Select a workflow to proceed. You can analyze profiles or manage recruitment drives.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <!-- Candidate Card -->
+                <div onclick="switchView('candidate-input')" class="group relative bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-white hover:border-brand-300 transition-all cursor-pointer overflow-hidden hover-lift delay-100">
+                    <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                        <i class="fa-solid fa-id-card text-[10rem] text-brand-600"></i>
+                    </div>
+                    <div class="relative z-10 flex flex-col h-full">
+                        <div class="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 mb-6 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                            <i class="fa-solid fa-user-astronaut text-2xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">My Profile Analysis</h2>
+                        <p class="text-slate-500 mb-8 flex-grow">Analyze your resume, visualize your skill graph vs. market data, and get a personalized learning roadmap.</p>
+                        <span class="text-brand-600 font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
+                            Proceed as Candidate <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Recruiter Card -->
+                <div onclick="switchView('recruiter-input')" class="group relative bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-white hover:border-accent-blue transition-all cursor-pointer overflow-hidden hover-lift delay-200">
+                    <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                        <i class="fa-solid fa-magnifying-glass-chart text-[10rem] text-accent-blue"></i>
+                    </div>
+                    <div class="relative z-10 flex flex-col h-full">
+                        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-accent-blue mb-6 group-hover:scale-110 group-hover:bg-accent-blue group-hover:text-white transition-all duration-300 shadow-sm">
+                            <i class="fa-solid fa-briefcase text-2xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Recruitment Hub</h2>
+                        <p class="text-slate-500 mb-8 flex-grow">Post jobs, view applicant skill-gap heatmaps, and use AI to predict candidate retention.</p>
+                        <span class="text-accent-blue font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
+                            Proceed as Recruiter <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View: Candidate Input -->
+        <section id="candidate-input" class="hidden max-w-3xl mx-auto px-4 py-12 fade-in-up">
+            <button onclick="switchView('landing-view')" class="text-slate-500 mb-6 hover:text-brand-600 flex items-center gap-2 transition-colors font-medium"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
+            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-10">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center text-brand-600">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Analyze Your Profile</h2>
+                        <p class="text-slate-500 text-sm">Upload your CV to generate your skill graph</p>
+                    </div>
+                </div>
+                
+                <!-- Upload Area -->
+                <div class="group border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center hover:bg-slate-50 hover:border-brand-400 transition-all cursor-pointer relative overflow-hidden" id="dropzone">
+                    <div class="absolute inset-0 bg-brand-50 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                    <i class="fa-solid fa-cloud-arrow-up text-5xl text-brand-300 group-hover:text-brand-500 group-hover:scale-110 transition-all mb-4 duration-300"></i>
+                    <p class="text-slate-800 font-bold text-lg">Drag & drop your Resume (PDF)</p>
+                    <p class="text-slate-400 text-sm mt-2">or click to browse local files</p>
+                </div>
+
+                <div class="my-8 flex items-center">
+                    <div class="flex-grow border-t border-slate-200"></div>
+                    <span class="mx-4 text-slate-400 text-xs font-bold tracking-wider">OR IMPORT FROM</span>
+                    <div class="flex-grow border-t border-slate-200"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <button class="flex items-center justify-center gap-3 py-3.5 border border-slate-200 rounded-xl hover:bg-[#0077b5] hover:text-white hover:border-[#0077b5] transition-all duration-300 text-slate-600 font-medium">
+                        <i class="fa-brands fa-linkedin text-xl"></i> LinkedIn
+                    </button>
+                    <button class="flex items-center justify-center gap-3 py-3.5 border border-slate-200 rounded-xl hover:bg-[#333] hover:text-white hover:border-[#333] transition-all duration-300 text-slate-600 font-medium">
+                        <i class="fa-brands fa-github text-xl"></i> GitHub
+                    </button>
+                </div>
+
+                <button onclick="simulateAnalysis('candidate')" class="w-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-brand-500/30 transition-all transform hover:-translate-y-1 focus:ring-4 focus:ring-brand-200">
+                    <i class="fa-solid fa-bolt mr-2"></i> Run AI Analysis
+                </button>
+            </div>
+        </section>
+
+        <!-- View: Recruiter Input -->
+        <section id="recruiter-input" class="hidden max-w-3xl mx-auto px-4 py-12 fade-in-up">
+            <button onclick="switchView('landing-view')" class="text-slate-500 mb-6 hover:text-brand-600 flex items-center gap-2 transition-colors font-medium"><i class="fa-solid fa-arrow-left"></i> Back to Menu</button>
+            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-10">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 bg-accent-blue/10 rounded-xl flex items-center justify-center text-accent-blue">
+                        <i class="fa-solid fa-bullseye text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Find Your Next Hire</h2>
+                        <p class="text-slate-500 text-sm">Post a job description to match top talent</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Job Title</label>
+                        <input type="text" value="Senior Full Stack Engineer" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-brand-100 focus:border-brand-500 focus:outline-none transition-shadow text-slate-900 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Job Description (JD)</label>
+                        <textarea rows="6" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:ring-4 focus:ring-brand-100 focus:border-brand-500 focus:outline-none transition-shadow text-slate-600 leading-relaxed">We are looking for a backend-heavy full stack engineer with experience in Node.js, Python, AWS, and Microservices. 
+
+Key Requirements:
+- Deep knowledge of Docker and Kubernetes is a must.
+- Experience scaling systems to millions of users.
+- Strong grasp of System Design principles.</textarea>
+                    </div>
+                </div>
+
+                <button onclick="simulateAnalysis('recruiter')" class="w-full mt-8 bg-gradient-to-r from-accent-blue to-blue-600 hover:from-blue-400 hover:to-accent-blue text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-1 focus:ring-4 focus:ring-blue-200">
+                    <i class="fa-solid fa-search mr-2"></i> Analyze & Find Candidates
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading Overlay -->
+        <div id="loader" class="hidden fixed inset-0 bg-white/95 z-[60] flex flex-col items-center justify-center backdrop-blur-md transition-opacity duration-500">
+            <div class="relative w-32 h-32 mb-8">
+                <div class="absolute top-0 w-32 h-32 border-4 border-brand-100 rounded-full"></div>
+                <div class="absolute top-0 w-32 h-32 border-4 border-brand-600 rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-full shadow-sm">
+                    <i class="fa-solid fa-microchip text-4xl text-brand-600 animate-pulse"></i>
+                </div>
+            </div>
+            <h3 id="loader-text" class="text-2xl font-bold text-slate-900 mb-2">Initializing NLP Engine...</h3>
+            <div class="w-64 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div id="loader-bar" class="h-full bg-brand-600 rounded-full transition-all duration-300" style="width: 5%"></div>
+            </div>
+            <p id="loader-sub" class="text-slate-500 mt-3 text-sm font-medium">Parsing entities and proficiency levels</p>
+        </div>
+
+        <!-- View: Candidate Dashboard -->
+        <section id="candidate-dashboard" class="hidden max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+            <!-- (Content same as previous version - preserved) -->
+             <!-- Header Info -->
+             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 fade-in-up">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 p-[2px]">
+                        <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Profile" class="w-full h-full rounded-full border-2 border-white">
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900">Hello, <span class="user-name-display">Alex</span>! 👋</h2>
+                        <p class="text-slate-500 font-medium">Full Stack Developer • Durg chhattisgarh, INDIA</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-sm font-bold border border-green-200 shadow-sm flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Open to Work
+                    </span>
+                    <span class="bg-white text-brand-700 px-4 py-1.5 rounded-full text-sm font-bold border border-brand-200 shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-check-circle text-brand-500"></i> AI Profile Optimized
+                    </span>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                
+                <!-- Card 1: Skill Graph -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-1 fade-in-up delay-100 hover-lift">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center text-brand-600">
+                                <i class="fa-solid fa-chart-radar"></i>
+                            </div>
+                            Skill Graph
+                        </h3>
+                        <button class="text-slate-400 hover:text-brand-600"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    <div class="relative h-72">
+                        <canvas id="candidateRadarChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex justify-center gap-6 text-xs font-medium">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-brand-500"></span> You
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-slate-400"></span> Market Avg
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Match Intelligence -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 lg:col-span-2 fade-in-up delay-200 hover-lift">
+                    <div class="flex flex-col md:flex-row gap-10 h-full">
+                        
+                        <!-- Score -->
+                        <div class="flex flex-col items-center justify-center min-w-[180px]">
+                            <div class="relative w-40 h-40 flex items-center justify-center">
+                                <svg class="w-full h-full transform -rotate-90 drop-shadow-lg">
+                                    <circle cx="80" cy="80" r="70" stroke="#f1f5f9" stroke-width="12" fill="none"></circle>
+                                    <circle cx="80" cy="80" r="70" stroke="#7c3aed" stroke-width="12" fill="none" stroke-dasharray="440" stroke-dashoffset="96" stroke-linecap="round"></circle>
+                                </svg>
+                                <div class="absolute text-center">
+                                    <span class="text-4xl font-extrabold text-slate-900 tracking-tight">78%</span>
+                                    <p class="text-xs font-bold text-slate-400 uppercase mt-1">Match Score</p>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-sm font-bold text-brand-600 bg-brand-50 px-3 py-1 rounded-full border border-brand-100">Strong Candidate</p>
+                        </div>
+
+                        <!-- Analysis Details -->
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="font-bold text-xl text-slate-900">Analysis for "Backend Engineer"</h3>
+                                    <p class="text-sm text-slate-500">Based on market requirements for Senior roles</p>
+                                </div>
+                                <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">Live Data</span>
+                            </div>
+                            
+                            <!-- Missing Skills -->
+                            <div class="mb-6 bg-red-50/50 p-4 rounded-xl border border-red-100">
+                                <p class="text-xs font-bold text-red-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Missing Critical Skills
+                                </p>
+                                <div class="flex flex-wrap gap-3">
+                                    <span class="px-3 py-1.5 bg-white text-red-600 rounded-lg text-sm font-bold border border-red-100 shadow-sm flex items-center gap-2">
+                                        <i class="fa-brands fa-docker text-lg"></i> Docker
+                                    </span>
+                                    <span class="px-3 py-1.5 bg-white text-red-600 rounded-lg text-sm font-bold border border-red-100 shadow-sm flex items-center gap-2">
+                                        <i class="fa-solid fa-sitemap text-lg"></i> System Design
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Roadmap -->
+                            <div>
+                                <div class="flex justify-between items-center mb-3">
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Recommended Roadmap</p>
+                                    <span class="text-xs font-bold text-brand-600">Est. 4 Weeks</span>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-4 group cursor-pointer">
+                                        <div class="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-brand-500/40 group-hover:scale-110 transition-transform">1</div>
+                                        <div class="flex-grow">
+                                            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                                                <span>Containerization (Docker/K8s)</span>
+                                                <span class="text-brand-600">0%</span>
+                                            </div>
+                                            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                <div class="h-full bg-brand-400 w-2 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                        <button class="text-xs bg-slate-900 text-white px-3 py-1 rounded-md hover:bg-slate-700">Start</button>
+                                    </div>
+                                    <div class="flex items-center gap-4 group cursor-pointer">
+                                        <div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center text-sm font-bold group-hover:border-brand-400 group-hover:text-brand-500 transition-colors">2</div>
+                                        <div class="flex-grow">
+                                             <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                                                <span>Microservices Architecture</span>
+                                                <span class="text-slate-400">Locked</span>
+                                            </div>
+                                            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                <div class="h-full bg-slate-200 w-0"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- (End of Candidate Dashboard Partial) -->
+            
+            <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2 fade-in-up delay-300">
+                <i class="fa-solid fa-star text-yellow-400"></i> Top Matched Roles
+            </h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Job Card 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 hover:shadow-xl hover:border-brand-200 transition-all group fade-in-up delay-400 cursor-pointer">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold text-xl border border-indigo-100">S</div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md border border-green-200 shadow-sm">92% Match</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-slate-900 group-hover:text-brand-600 transition-colors">Backend Engineer</h4>
+                    <p class="text-sm text-slate-500 mb-4 font-medium">Stripe • Remote</p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="text-xs bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200 font-medium">Node.js</span>
+                        <span class="text-xs bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200 font-medium">PostgreSQL</span>
+                        <span class="text-xs bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200 font-medium">API</span>
+                    </div>
+                    <button class="w-full py-2.5 border border-brand-200 text-brand-600 rounded-xl font-bold hover:bg-brand-600 hover:text-white transition-all shadow-sm">View Details</button>
+                </div>
+
+                <!-- Job Card 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 hover:shadow-xl hover:border-brand-200 transition-all group fade-in-up delay-500 cursor-pointer">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">
+                            <i class="fa-brands fa-aws"></i>
+                        </div>
+                        <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded-md border border-yellow-200 shadow-sm">78% Match</span>
+                    </div>
+                    <h4 class="font-bold text-lg text-slate-900 group-hover:text-brand-600 transition-colors">Cloud Intern</h4>
+                    <p class="text-sm text-slate-500 mb-4 font-medium">Amazon Web Services • Seattle</p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="text-xs bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200 font-medium">AWS</span>
+                        <span class="text-xs bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100 font-medium flex items-center gap-1">
+                             Docker <i class="fa-solid fa-xmark text-[10px]"></i>
+                        </span>
+                    </div>
+                    <button class="w-full py-2.5 border border-slate-200 text-slate-600 rounded-xl font-bold hover:border-slate-800 hover:text-slate-800 transition-all shadow-sm">View Details</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- View: Recruiter Dashboard -->
+        <section id="recruiter-dashboard" class="hidden max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+             <!-- (Content same as previous version - preserved) -->
+             <div class="flex justify-between items-center mb-8 fade-in-up">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">Senior Full Stack Engineer</h2>
+                    <p class="text-slate-500 font-medium flex items-center gap-2 mt-1">
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span> Active Listing • Posted 2 days ago
+                    </p>
+                </div>
+                <button class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Export Report
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                
+                <!-- Candidates List -->
+                <div class="lg:col-span-2 space-y-4 fade-in-up delay-100">
+                    <h3 class="font-bold text-slate-800 mb-2 flex justify-between items-end">
+                        <span>Top 5 AI-Ranked Candidates</span>
+                        <span class="text-xs text-brand-600 font-bold cursor-pointer hover:underline">View All (42)</span>
+                    </h3>
+                    
+                    <!-- Candidate Row 1 -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between hover:border-brand-400 hover:shadow-lg transition-all cursor-pointer group">
+                        <div class="flex items-center gap-4">
+                            <div class="relative">
+                                <img src="https://i.pravatar.cc/150?u=1" alt="User" class="w-14 h-14 rounded-full border-2 border-white shadow-sm">
+                                <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-lg group-hover:text-brand-600 transition-colors">Sarah Jenkins</h4>
+                                <p class="text-xs text-slate-500 font-medium">Ex-Google • 5 Yrs Exp • <span class="text-slate-400">Stanford</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-8">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Retention</p>
+                                <p class="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md mt-1">High (92%)</p>
+                            </div>
+                            <div class="text-right min-w-[70px]">
+                                <span class="block text-2xl font-extrabold text-brand-600">95%</span>
+                                <span class="text-xs text-slate-400 font-bold uppercase">Match</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-brand-600 group-hover:text-white transition-all">
+                                <i class="fa-solid fa-chevron-right text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Row 2 -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between hover:border-brand-400 hover:shadow-lg transition-all cursor-pointer group">
+                        <div class="flex items-center gap-4">
+                             <div class="relative">
+                                <img src="https://i.pravatar.cc/150?u=2" alt="User" class="w-14 h-14 rounded-full border-2 border-white shadow-sm">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-lg group-hover:text-brand-600 transition-colors">Mike Chen</h4>
+                                <p class="text-xs text-slate-500 font-medium">Startup Founder • 4 Yrs Exp • <span class="text-slate-400">Self-Taught</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-8">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Retention</p>
+                                <p class="text-sm font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-md mt-1">Med (65%)</p>
+                            </div>
+                            <div class="text-right min-w-[70px]">
+                                <span class="block text-2xl font-extrabold text-brand-600">88%</span>
+                                <span class="text-xs text-slate-400 font-bold uppercase">Match</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-brand-600 group-hover:text-white transition-all">
+                                <i class="fa-solid fa-chevron-right text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skill Gap Heatmap & Analytics -->
+                <div class="space-y-6 fade-in-up delay-200">
+                    
+                    <!-- Heatmap -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:shadow-lg transition-shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-fire text-orange-500"></i> Pool Heatmap
+                            </h3>
+                            <button class="text-xs text-slate-400 hover:text-brand-600"><i class="fa-solid fa-circle-info"></i></button>
+                        </div>
+                        
+                        <div class="grid grid-cols-4 gap-2 text-xs font-bold text-slate-500 text-center">
+                            <!-- Headers -->
+                            <div class="col-span-1 text-left pb-2">Skill</div>
+                            <div class="pb-2">Jr</div>
+                            <div class="pb-2">Mid</div>
+                            <div class="pb-2">Sr</div>
+
+                            <!-- Row 1 -->
+                            <div class="text-left py-2 flex items-center text-slate-700">React</div>
+                            <div class="bg-green-100 text-green-700 py-2 rounded-lg heatmap-cell cursor-help">High</div>
+                            <div class="bg-green-100 text-green-700 py-2 rounded-lg heatmap-cell cursor-help">High</div>
+                            <div class="bg-yellow-100 text-yellow-700 py-2 rounded-lg heatmap-cell cursor-help">Med</div>
+                            <!-- Row 2 -->
+                            <div class="text-left py-2 flex items-center text-slate-700">Node</div>
+                            <div class="bg-green-100 text-green-700 py-2 rounded-lg heatmap-cell cursor-help">High</div>
+                            <div class="bg-yellow-100 text-yellow-700 py-2 rounded-lg heatmap-cell cursor-help">Med</div>
+                            <div class="bg-red-100 text-red-700 py-2 rounded-lg heatmap-cell cursor-help">Low</div>
+                        </div>
+                    </div>
+
+                    <!-- Retention Prediction -->
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hover:shadow-lg transition-shadow">
+                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-crystal-ball text-brand-500"></i> AI Insights
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-2">
+                                    <span class="text-slate-500 font-medium">Avg. Tenure Prediction</span>
+                                    <span class="font-bold text-slate-900">2.4 Years</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-brand-400 to-brand-600 h-full rounded-full" style="width: 70%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <!-- Chatbot Widget -->
+    <div id="chatbot-container" class="hidden fixed bottom-8 right-8 z-50 flex-col items-end gap-4">
+        <!-- Chat Window -->
+        <div id="chat-window" class="hidden w-80 md:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col transition-all transform origin-bottom-right scale-95 opacity-0">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-brand-600 to-brand-700 p-4 flex justify-between items-center text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">SkillMatch AI</h4>
+                        <p class="text-[10px] text-brand-100 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> Online</p>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="text-white/80 hover:text-white"><i class="fa-solid fa-times"></i></button>
+            </div>
+            
+            <!-- Messages -->
+            <div id="chat-messages" class="h-80 overflow-y-auto p-4 bg-slate-50 flex flex-col gap-3">
+                <div class="chat-message chat-bot">
+                    Hi there! 👋 I'm your AI career assistant. How can I help you today?
+                </div>
+            </div>
+            
+            <!-- Input -->
+            <div class="p-3 bg-white border-t border-slate-200">
+                <form onsubmit="handleChatSubmit(event)" class="relative">
+                    <input type="text" id="chat-input" placeholder="Type a message..." class="w-full pl-4 pr-12 py-3 bg-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow">
+                    <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center hover:bg-brand-700 transition-colors">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- FAB Button -->
+        <button onclick="toggleChat()" id="chat-fab" class="w-16 h-16 bg-gradient-to-br from-brand-600 to-brand-700 rounded-full shadow-lg shadow-brand-600/40 text-white text-2xl flex items-center justify-center hover:scale-110 transition-transform duration-300 animate-float">
+            <i class="fa-solid fa-comment-dots"></i>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer" class="hidden bg-white border-t border-slate-200 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center gap-2 mb-4 opacity-50">
+                <i class="fa-solid fa-brain text-brand-600"></i>
+                <span class="font-bold text-slate-700">SkillMatch.ai</span>
+            </div>
+            <p class="text-slate-400 text-sm">&copy; 2025 SkillMatch AI.</p>
+        </div>
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        // Constants
+        const views = [
+            'auth-view',
+            'landing-view', 
+            'candidate-input', 
+            'recruiter-input', 
+            'candidate-dashboard', 
+            'recruiter-dashboard'
+        ];
+
+        let radarChartInstance = null;
+        let currentRole = 'candidate'; // 'candidate' or 'recruiter'
+        let authMode = 'login'; // 'login' or 'signup'
+
+        // --- AUTH & NAVIGATION LOGIC ---
+
+        function setAuthRole(role) {
+            currentRole = role;
+            const btnCandidate = document.getElementById('btn-candidate');
+            const btnRecruiter = document.getElementById('btn-recruiter');
+            const indicator = document.getElementById('role-indicator');
+            
+            if (role === 'candidate') {
+                btnCandidate.classList.add('text-brand-700');
+                btnCandidate.classList.remove('text-slate-500');
+                btnRecruiter.classList.add('text-slate-500');
+                btnRecruiter.classList.remove('text-brand-700'); // Or accent color
+                indicator.style.transform = 'translateX(0)';
+            } else {
+                btnCandidate.classList.add('text-slate-500');
+                btnCandidate.classList.remove('text-brand-700');
+                btnRecruiter.classList.add('text-brand-700'); // Maybe change color for recruiter?
+                btnRecruiter.classList.remove('text-slate-500');
+                indicator.style.transform = 'translateX(100%)'; // Move indicator
+            }
+        }
+
+        function toggleAuthMode() {
+            authMode = authMode === 'login' ? 'signup' : 'login';
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            const btnText = document.getElementById('btn-text');
+            const toggleLink = document.getElementById('auth-toggle-link');
+            
+            // Animation for transition
+            const formContainer = document.querySelector('.glass-panel');
+            formContainer.classList.add('slide-in-right');
+            setTimeout(() => formContainer.classList.remove('slide-in-right'), 400);
+
+            if (authMode === 'signup') {
+                title.innerText = 'Create Account';
+                subtitle.innerText = `Join as a ${currentRole === 'candidate' ? 'Candidate' : 'Recruiter'}`;
+                btnText.innerText = 'Sign Up';
+                toggleLink.innerText = 'Sign In';
+            } else {
+                title.innerText = 'Welcome Back';
+                subtitle.innerText = 'Enter your credentials to access your dashboard';
+                btnText.innerText = 'Sign In';
+                toggleLink.innerText = 'Sign Up';
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            // Fake processing
+            const btnText = document.getElementById('btn-text');
+            const originalText = btnText.innerText;
+            btnText.innerText = 'Authenticating...';
+            
+            setTimeout(() => {
+                // Success
+                document.getElementById('navbar').classList.remove('hidden');
+                document.getElementById('footer').classList.remove('hidden');
+                document.getElementById('chatbot-container').classList.remove('hidden');
+                document.getElementById('chatbot-container').classList.add('flex');
+                
+                // Update username based on role
+                const nameDisplay = document.getElementById('landing-username');
+                const navName = document.querySelector('#profile-dropdown h4');
+                const navRole = document.querySelector('#profile-dropdown p');
+                const dashName = document.querySelector('.user-name-display');
+
+                if (currentRole === 'candidate') {
+                    const name = "Alex Johnson";
+                    nameDisplay.innerText = name;
+                    navName.innerText = name;
+                    navRole.innerText = "Candidate Account";
+                    if(dashName) dashName.innerText = "Alex";
+                } else {
+                    const name = "Sarah Miller";
+                    nameDisplay.innerText = name;
+                    navName.innerText = name;
+                    navRole.innerText = "Recruiter Account";
+                    if(dashName) dashName.innerText = "Sarah";
+                }
+
+                switchView('landing-view');
+                btnText.innerText = originalText;
+            }, 1000);
+        }
+
+        function handleLogout() {
+            location.reload(); // Simple reset for demo
+        }
+
+        function switchView(viewId) {
+            views.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden');
+                el.classList.remove('fade-in-up'); 
+            });
+            
+            const newView = document.getElementById(viewId);
+            newView.classList.remove('hidden');
+            
+            // Trigger reflow for animation
+            void newView.offsetWidth; 
+            newView.classList.add('fade-in-up');
+            
+            window.scrollTo(0,0);
+        }
+
+        // --- EXISTING LOGIC PRESERVED ---
+
+        // Reset
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            location.reload();
+        });
+
+        // Toggle Profile Menu
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-dropdown');
+            menu.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('profile-dropdown');
+            const profileBtn = document.getElementById('profile-btn');
+            if (!menu.classList.contains('hidden') && !menu.contains(event.target) && !profileBtn.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function simulateAnalysis(type) {
+            const loader = document.getElementById('loader');
+            const loaderText = document.getElementById('loader-text');
+            const loaderSub = document.getElementById('loader-sub');
+            const loaderBar = document.getElementById('loader-bar');
+            
+            loader.classList.remove('hidden');
+            loader.classList.remove('opacity-0');
+
+            const steps = [
+                { t: 0, title: "Parsing Document...", sub: "Extracting semantic entities", p: '20%' },
+                { t: 1500, title: "Building Knowledge Graph...", sub: "Mapping nodes: Python, AWS, Docker", p: '50%' },
+                { t: 3000, title: "Analyzing Proficiency...", sub: "Calculating experience vectors", p: '80%' },
+                { t: 4500, title: "Matching...", sub: "Comparing against live job market", p: '100%' }
+            ];
+
+            steps.forEach(step => {
+                setTimeout(() => {
+                    loaderText.innerText = step.title;
+                    loaderSub.innerText = step.sub;
+                    loaderBar.style.width = step.p;
+                }, step.t);
+            });
+
+            setTimeout(() => {
+                loader.classList.add('opacity-0'); 
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    loader.classList.remove('opacity-0');
+                    if(type === 'candidate') {
+                        switchView('candidate-dashboard');
+                        renderCandidateChart();
+                    } else {
+                        switchView('recruiter-dashboard');
+                    }
+                }, 500); 
+            }, 5500);
+        }
+
+        function renderCandidateChart() {
+            const ctx = document.getElementById('candidateRadarChart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Backend', 'Frontend', 'DevOps', 'System Design', 'Algorithms', 'Soft Skills'],
+                    datasets: [{
+                        label: 'Your Profile',
+                        data: [90, 65, 40, 50, 80, 85],
+                        fill: true,
+                        backgroundColor: 'rgba(124, 58, 237, 0.2)',
+                        borderColor: 'rgb(124, 58, 237)',
+                        pointBackgroundColor: 'rgb(124, 58, 237)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(124, 58, 237)',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }, {
+                        label: 'Market Average (Senior)',
+                        data: [85, 70, 75, 80, 75, 70],
+                        fill: true,
+                        backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                        borderColor: 'rgb(148, 163, 184)',
+                        pointBackgroundColor: 'rgb(148, 163, 184)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(148, 163, 184)',
+                        pointRadius: 3,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    elements: { line: { borderWidth: 2 } },
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#f1f5f9' },
+                            pointLabels: {
+                                font: { size: 11, family: "'Plus Jakarta Sans', sans-serif", weight: '600' },
+                                color: '#64748b'
+                            },
+                            ticks: { display: false, maxTicksLimit: 5 }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 12 }
+                            }
+                        }
+                    },
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        let isChatOpen = false;
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            const chatFab = document.getElementById('chat-fab');
+            isChatOpen = !isChatOpen;
+
+            if (isChatOpen) {
+                chatWindow.classList.remove('hidden');
+                setTimeout(() => {
+                    chatWindow.classList.remove('scale-95', 'opacity-0');
+                    chatWindow.classList.add('scale-100', 'opacity-100');
+                }, 10);
+                chatFab.classList.add('hidden');
+            } else {
+                chatWindow.classList.remove('scale-100', 'opacity-100');
+                chatWindow.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    chatWindow.classList.add('hidden');
+                }, 300);
+                chatFab.classList.remove('hidden');
+            }
+        }
+
+        function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+            showTyping();
+
+            setTimeout(() => {
+                removeTyping();
+                let reply = "I can definitely help with that! Based on your current skill graph, I'd recommend focusing on System Design to boost your match score.";
+                if(message.toLowerCase().includes('job')) {
+                    reply = "I found 3 new roles that match your backend profile perfectly. Would you like to see them?";
+                } else if (message.toLowerCase().includes('salary')) {
+                    reply = "Based on your proficiency in Node.js and React, you fall into the $140k - $160k range in the current market.";
+                }
+                addMessage(reply, 'bot');
+            }, 2000);
+        }
+
+        function addMessage(text, type) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = `chat-message ${type === 'user' ? 'chat-user' : 'chat-bot'}`;
+            div.innerText = text;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTyping() {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.id = 'typing-indicator';
+            div.className = 'chat-message chat-bot flex gap-1 items-center w-16';
+            div.innerHTML = `
+                <div class="w-2 h-2 bg-slate-400 rounded-full typing-dot"></div>
+                <div class="w-2 h-2 bg-slate-400 rounded-full typing-dot"></div>
+                <div class="w-2 h-2 bg-slate-400 rounded-full typing-dot"></div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeTyping() {
+            const el = document.getElementById('typing-indicator');
+            if(el) el.remove();
+        }
+
+        // Initialize State
+        setAuthRole('candidate'); // Default
+    </script>
+</body>
+</html>
